@@ -29,6 +29,15 @@ app.get("/", (req, res) => {
     res.send("Ok – Servidor disponível.");//vai para browser
 });
 
+
+
+
+
+
+
+
+
+
 app.get("/usuarios", (req, res) => {
     try {
         console.log("Rota: usuarios/" + req.params.id);
@@ -46,6 +55,38 @@ app.get("/usuarios", (req, res) => {
         console.log(error);
     }
 });
+
+app.get("/leilao", (req, res) => {
+    try {
+        console.log("Rota: leilao/" + req.params.id);
+        client.query(
+            "SELECT * FROM leilao",
+            (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de SELECT id", err);
+                }
+                res.send(result.rows);
+                console.log(result);
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.get("/usuarios/:id", (req, res) => {
     try {
@@ -65,27 +106,50 @@ app.get("/usuarios/:id", (req, res) => {
     }
 });
 
-app.delete("/usuarios/:id", (req, res) => {
+app.get("/leilao/:id", (req, res) => {
     try {
-        console.log("Rota: delete/" + req.params.id);
+        console.log("Rota: leilao/" + req.params.id);
         client.query(
-            "DELETE FROM Usuarios WHERE id = $1", [req.params.id], (err, result) => {
+            "SELECT * FROM leilao WHERE id = $1", [req.params.id],
+            (err, result) => {
                 if (err) {
-                    return console.error("Erro ao executar a qry de DELETE", err);
-                } else {
-                    if (result.rowCount == 0) {
-                        res.status(404).json({ info: "Registro não encontrado." });
-                    } else {
-                        res.status(200).json({ info: `Registro excluído. Código: ${id}` });
-                    }
+                    return console.error("Erro ao executar a qry de SELECT id", err);
                 }
-                console.log(result);
+                res.send(result.rows);
+                //console.log(result);
             }
         );
     } catch (error) {
         console.log(error);
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.delete("/usuarios/:id", (req, res) => {
     try {
@@ -108,6 +172,100 @@ app.delete("/usuarios/:id", (req, res) => {
         console.log(error);
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.delete("/usuarios/:id", (req, res) => {
+    try {
+        console.log("Rota: delete/" + req.params.id);
+        client.query(
+            "DELETE FROM Usuarios WHERE id = $1", [req.params.id], (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de DELETE", err);
+                } else {
+                    if (result.rowCount == 0) {
+                        res.status(404).json({ info: "Registro não encontrado." });
+                    } else {
+                        res.status(200).json({ info: `Registro excluído. Código: ${id}` });
+                    }
+                }
+                console.log(result);
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+app.delete("/leilao/:id", (req, res) => {
+    try {
+        console.log("Rota: delete/" + req.params.id);
+        client.query(
+            "DELETE FROM leilao WHERE id = $1", [req.params.id], (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de DELETE", err);
+                } else {
+                    if (result.rowCount == 0) {
+                        res.status(404).json({ info: "Registro não encontrado." });
+                    } else {
+                        res.status(200).json({ info: `Registro excluído. Código: ${id}` });
+                    }
+                }
+                console.log(result);
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.post("/usuarios", (req, res) => {
     try {
@@ -129,6 +287,76 @@ app.post("/usuarios", (req, res) => {
         console.error(erro);
     }
 });
+
+
+app.post("/leilao", (req, res) => {
+    try {
+        console.log("Alguém enviou um post com os dados:", req.body);
+        const { marca, ano, modelo, cor } = req.body;
+        client.query(
+            "INSERT INTO leilao (marca, ano, modelo, cor) VALUES ($1, $2, $3, $4) RETURNING * ", [marca, ano, modelo, cor],
+            (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de INSERT", err);
+                }
+                const { id } = result.rows[0];
+                res.setHeader("id", `${id}`);
+                res.status(201).json(result.rows[0]);
+                console.log(result);
+            }
+        );
+    } catch (erro) {
+        console.error(erro);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.put("/usuarios/:id", (req, res) => {
     try {
@@ -152,6 +380,70 @@ app.put("/usuarios/:id", (req, res) => {
         console.error(erro);
     }
 });
+
+app.put("/leilao/:id", (req, res) => {
+    try {
+        console.log("Alguém enviou um update com os dados:", req.body);
+        const id = req.params.id;
+        const { marca, ano, modelo, cor } = req.body;
+        client.query(
+            "UPDATE leilao SET marca=$1, ano=$2, modelo=$3, cor=$4 WHERE id =$5 ",
+            [marca, ano, modelo, cor, id],
+            function (err, result) {
+                if (err) {
+                    return console.error("Erro ao executar a qry de UPDATE", err);
+                } else {
+                    res.setHeader("id", id);
+                    res.status(202).json({ "identificador": id });
+                    console.log(result);
+                }
+            }
+        );
+    } catch (erro) {
+        console.error(erro);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(config.port, () =>
     console.log("Servidor funcionando na porta " + config.port)
