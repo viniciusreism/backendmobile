@@ -74,6 +74,24 @@ app.get("/leilao", (req, res) => {
     }
 });
 
+app.get("/imc", (req, res) => {
+    try {
+        console.log("Rota: imc/" + req.params.id);
+        client.query(
+            "SELECT * FROM imc",
+            (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de SELECT id", err);
+                }
+                res.send(result.rows);
+                console.log(result);
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+});
+
 
 
 
@@ -124,54 +142,51 @@ app.get("/leilao/:id", (req, res) => {
     }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.delete("/usuarios/:id", (req, res) => {
+app.get("/imc/:id", (req, res) => {
     try {
-        console.log("Rota: delete/" + req.params.id);
+        console.log("Rota: imc/" + req.params.id);
         client.query(
-            "DELETE FROM Usuarios WHERE id = $1", [req.params.id], (err, result) => {
+            "SELECT * FROM imc WHERE id = $1", [req.params.id],
+            (err, result) => {
                 if (err) {
-                    return console.error("Erro ao executar a qry de DELETE", err);
-                } else {
-                    if (result.rowCount == 0) {
-                        res.status(404).json({ info: "Registro não encontrado." });
-                    } else {
-                        res.status(200).json({ info: `Registro excluído. Código: ${id}` });
-                    }
+                    return console.error("Erro ao executar a qry de SELECT id", err);
                 }
-                console.log(result);
+                res.send(result.rows);
+                //console.log(result);
             }
         );
     } catch (error) {
         console.log(error);
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -234,6 +249,27 @@ app.delete("/leilao/:id", (req, res) => {
     }
 });
 
+app.delete("/imc/:id", (req, res) => {
+    try {
+        console.log("Rota: delete/" + req.params.id);
+        client.query(
+            "DELETE FROM imc WHERE id = $1", [req.params.id], (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de DELETE", err);
+                } else {
+                    if (result.rowCount == 0) {
+                        res.status(404).json({ info: "Registro não encontrado." });
+                    } else {
+                        res.status(200).json({ info: `Registro excluído. Código: ${id}` });
+                    }
+                }
+                console.log(result);
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+});
 
 
 
@@ -295,6 +331,27 @@ app.post("/leilao", (req, res) => {
         const { marca, ano, modelo, cor } = req.body;
         client.query(
             "INSERT INTO leilao (marca, ano, modelo, cor) VALUES ($1, $2, $3, $4) RETURNING * ", [marca, ano, modelo, cor],
+            (err, result) => {
+                if (err) {
+                    return console.error("Erro ao executar a qry de INSERT", err);
+                }
+                const { id } = result.rows[0];
+                res.setHeader("id", `${id}`);
+                res.status(201).json(result.rows[0]);
+                console.log(result);
+            }
+        );
+    } catch (erro) {
+        console.error(erro);
+    }
+});
+
+app.post("/imc", (req, res) => {
+    try {
+        console.log("Alguém enviou um post com os dados:", req.body);
+        const { nome, altura, peso, resultado } = req.body;
+        client.query(
+            "INSERT INTO imc (nome, altura, peso, resultado) VALUES ($1, $2, $3, $4) RETURNING * ", [nome, altura, peso, resultado],
             (err, result) => {
                 if (err) {
                     return console.error("Erro ao executar a qry de INSERT", err);
@@ -405,6 +462,28 @@ app.put("/leilao/:id", (req, res) => {
 });
 
 
+app.put("/imc/:id", (req, res) => {
+    try {
+        console.log("Alguém enviou um update com os dados:", req.body);
+        const id = req.params.id;
+        const { nome, altura, peso, resultado } = req.body;
+        client.query(
+            "UPDATE imc SET nome=$1, altura=$2, peso=$3, resultado=$4 WHERE id =$5 ",
+            [nome, altura, peso, resultado, id],
+            function (err, result) {
+                if (err) {
+                    return console.error("Erro ao executar a qry de UPDATE", err);
+                } else {
+                    res.setHeader("id", id);
+                    res.status(202).json({ "identificador": id });
+                    console.log(result);
+                }
+            }
+        );
+    } catch (erro) {
+        console.error(erro);
+    }
+});
 
 
 
